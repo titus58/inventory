@@ -18,8 +18,10 @@ class UnitController {
 
     @GetMapping("/units")
     @ResponseBody
-    fun getAll(): MultipleUnitsResponse {
-        return unitService.getAll()
+    fun getAll(
+            @RequestParam(value="returnAttributes", required = false, defaultValue = "false") returnAttributes: Boolean
+    ): MultipleUnitsResponse {
+        return unitService.getAll(returnAttributes)
     }
 
     @PostMapping("/units")

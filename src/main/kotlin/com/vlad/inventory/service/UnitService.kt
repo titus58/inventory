@@ -69,10 +69,19 @@ class UnitService {
         return null
     }
 
-    fun getAll(): MultipleUnitsResponse {
+    fun getAll(returnAttributes: Boolean): MultipleUnitsResponse {
         return MultipleUnitsResponse(productUnitRepository
                 .findAll()
-                .map { it -> it.toDTO() }
+                .map { it ->
+                    val ret = it.toDTO()
+                    if (returnAttributes) {
+                        ret.attributes = attributeValueRepository
+                                .findByProductUnit(it)
+                                .map { attribute -> attribute.toOutputDTO() }
+                                .toList()
+                    }
+                    ret
+                }
                 .toList())
     }
 }
