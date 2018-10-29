@@ -129,10 +129,10 @@ class UnitService {
         return dto
     }
 
-    fun getAll(returnAttributes: Boolean, validate: Boolean): MultipleUnitsResponse {
-        return MultipleUnitsResponse(productUnitRepository
+    fun getAll(returnAttributes: Boolean, validate: Boolean): List<ProductUnitDTO> {
+        return productUnitRepository
                 .findAll()
                 .map { getEnhancedUnitDTO(it, returnAttributes = returnAttributes, validate = validate) }
-                .toList())
+                .toList()
     }
 }

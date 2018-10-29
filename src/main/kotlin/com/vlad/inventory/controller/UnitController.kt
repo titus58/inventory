@@ -20,9 +20,27 @@ class UnitController {
     @ResponseBody
     fun getAll(
             @RequestParam(value="returnAttributes", required = false, defaultValue = "false") returnAttributes: Boolean,
-            @RequestParam(value="validate", required = false, defaultValue = "false") validate: Boolean
+            @RequestParam(value="validate", required = false, defaultValue = "false") validate: Boolean,
+            @RequestParam(value="filter", required = false, defaultValue = "all") filter: String
     ): MultipleUnitsResponse {
-        return unitService.getAll(returnAttributes = returnAttributes, validate = validate)
+        if (!setOf<String>("onlyValid", "onlyInvalid", "all").contains(filter)) {
+            throw  ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid value for 'filter' available: all|onlyValid|onlyInvalid")
+        }
+        val shouldValidate = validate || (filter != "all")
+        val units = unitService
+                .getAll(returnAttributes = returnAttributes, validate = validate)
+                .filter {
+                    if (filter == "all") {
+                        true
+                    } else {
+                        if (filter == "onlyValid") {
+                            it.isValid == true
+                        }else {
+                            it.isValid == false
+                        }
+                    }
+                }
+        return MultipleUnitsResponse(units)
     }
 
     @PostMapping("/units")
