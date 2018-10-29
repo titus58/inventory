@@ -20,14 +20,25 @@ class UnitService {
     @Autowired
     lateinit var attributeTypeRepository: AttributeTypeRepository
 
+    @Autowired
+    lateinit var productTypeRepository: ProductTypeRepository
+
+    @Autowired
+    lateinit var constraintEntityRepository: ConstraintEntityRepository
+
     fun postUnit(productUnitDTO: ProductUnitDTO): ProductUnitDTO {
+        val productTypeId = productUnitDTO.productTypeId ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "productTypeId not set")
+        val productType = productTypeRepository
+                .findById(productTypeId)
+                .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find productType with id " + productTypeId) }
         val owner = ownerRepository
                 .findById(productUnitDTO.ownerId)
                 .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find owner with id " + productUnitDTO.ownerId) }
         val productUnit = ProductUnit(
                 id = null,
                 name = productUnitDTO.name,
-                owner = owner
+                owner = owner,
+                productType = productType
         )
         return productUnitRepository.save(productUnit).toDTO()
     }
@@ -69,19 +80,59 @@ class UnitService {
         return null
     }
 
-    fun getAll(returnAttributes: Boolean): MultipleUnitsResponse {
+    fun checkConstraintIsSatisfied(constraintEntity: ConstraintEntity, productUnit: ProductUnit): Boolean  {
+        val attributeType = constraintEntity.attributeType
+        val attributeValue = attributeValueRepository.findByProductUnitAndAttributeType(productUnit = productUnit, attributeType = attributeType)
+        if (attributeValue.isEmpty()) {
+            return false
+        }
+        val firstValue = attributeValue[0]
+        val constraintDto = constraintEntity.toOutputDTO()
+        if (constraintEntity.constraintType == ConstraintType.PRESENCE) {
+            return true // We checked above that the attribute exist
+        }
+        if (constraintEntity.constraintType == ConstraintType.RANGE_FLOAT && firstValue.attributeType.type == AttributeValueType.FLOAT) {
+            // TODO: this is not a good way to deal with nullables
+            val rangeFloatData = constraintDto.rangeFloatData!!
+            val floatValue = firstValue.floatValue!!
+            return floatValue >= rangeFloatData[0] && floatValue <= rangeFloatData[1]
+        }
+        if (constraintEntity.constraintType == ConstraintType.RANGE_INT && firstValue.attributeType.type == AttributeValueType.INT) {
+            // TODO: this is not a good way to deal with nullables
+            val rangeIntData = constraintDto.rangeIntData!!
+            val intValue = firstValue.intValue!!
+            return intValue >= rangeIntData[0] && intValue <= rangeIntData[1]
+        }
+        if (constraintEntity.constraintType == ConstraintType.WHITELIST && firstValue.attributeType.type == AttributeValueType.STRING) {
+            val whitelist = constraintDto.whitelistData!!
+            val stringValue = firstValue.stringValue!!
+            return whitelist.contains(stringValue)
+        }
+        return false
+    }
+
+    fun getEnhancedUnitDTO(productUnit: ProductUnit, returnAttributes: Boolean, validate: Boolean): ProductUnitDTO {
+        var dto = productUnit.toDTO()
+        if (!returnAttributes && !validate) {
+            return dto
+        }
+        val attributes = attributeValueRepository
+                .findByProductUnit(productUnit)
+        if (validate) {
+             val unsatisfiedConstraints = constraintEntityRepository
+                    .findByProductType(productUnit.productType)
+                    .filterNot { checkConstraintIsSatisfied(it, productUnit) }
+                     .map { it.toOutputDTO() }
+            dto.isValid = unsatisfiedConstraints.isEmpty()
+            dto.unsatisfiedConstraints = unsatisfiedConstraints
+        }
+        return dto
+    }
+
+    fun getAll(returnAttributes: Boolean, validate: Boolean): MultipleUnitsResponse {
         return MultipleUnitsResponse(productUnitRepository
                 .findAll()
-                .map { it ->
-                    val ret = it.toDTO()
-                    if (returnAttributes) {
-                        ret.attributes = attributeValueRepository
-                                .findByProductUnit(it)
-                                .map { attribute -> attribute.toOutputDTO() }
-                                .toList()
-                    }
-                    ret
-                }
+                .map { getEnhancedUnitDTO(it, returnAttributes = returnAttributes, validate = validate) }
                 .toList())
     }
 }

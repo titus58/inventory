@@ -19,9 +19,10 @@ class UnitController {
     @GetMapping("/units")
     @ResponseBody
     fun getAll(
-            @RequestParam(value="returnAttributes", required = false, defaultValue = "false") returnAttributes: Boolean
+            @RequestParam(value="returnAttributes", required = false, defaultValue = "false") returnAttributes: Boolean,
+            @RequestParam(value="validate", required = false, defaultValue = "false") validate: Boolean
     ): MultipleUnitsResponse {
-        return unitService.getAll(returnAttributes)
+        return unitService.getAll(returnAttributes = returnAttributes, validate = validate)
     }
 
     @PostMapping("/units")

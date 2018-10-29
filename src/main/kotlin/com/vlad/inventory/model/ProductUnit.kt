@@ -10,10 +10,13 @@ data class ProductUnit(
     @Column(nullable = false)
     var name: String,
     @ManyToOne
-    var owner: Owner
+    var owner: Owner,
+    @ManyToOne
+    var productType: ProductType
 ) {
     fun toDTO(): ProductUnitDTO {
-        return ProductUnitDTO(id = id, name = name, ownerId = owner.id, attributes = null)
+        return ProductUnitDTO(id = id, name = name, ownerId = owner.id, ownerName = owner.name, productTypeId = productType.id,
+                productTypeName = productType.name, attributes = null, isValid = null, unsatisfiedConstraints = null)
     }
 }
 
@@ -22,7 +25,12 @@ data class ProductUnitDTO(
         var id: Long?,
         var name: String,
         var ownerId: Long,
-        var attributes: List<AttributeValueDTO>?
+        var ownerName: String?,
+        var productTypeId: Long?,
+        var productTypeName: String?,
+        var attributes: List<AttributeValueDTO>?,
+        var isValid: Boolean?,
+        var unsatisfiedConstraints: List<ConstraintDTO>?
 )
 data class MultipleUnitsResponse(
         var units: List<ProductUnitDTO>

@@ -1,5 +1,6 @@
 package com.vlad.inventory.model
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import javax.persistence.*
 
@@ -23,7 +24,8 @@ data class ConstraintEntity(
     var internalData: String
 ) {
     fun toOutputDTO(): ConstraintDTO {
-        val ret = ConstraintDTO(id = id, productTypeId = productType.id, attributeTypeId = attributeType.id, constraintType = constraintType, rangeFloatData = null, rangeIntData = null, whitelistData = null)
+        val ret = ConstraintDTO(id = id, productTypeId = productType.id, attributeTypeId = attributeType.id, constraintType = constraintType,
+                rangeFloatData = null, rangeIntData = null, whitelistData = null, attributeName = attributeType.name, attributeNamespace = attributeType.namespace)
         if (constraintType == ConstraintType.RANGE_FLOAT) {
             val mapper = ObjectMapper()
             val rangeFloatData: List<Float> = mapper.readValue(internalData, mapper.typeFactory.constructCollectionType(List::class.java, Float::class.java))
@@ -43,6 +45,7 @@ data class ConstraintEntity(
     }
 }
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class ConstraintDTO(
         var id: Long?,
         var productTypeId: Long?,
@@ -50,7 +53,9 @@ data class ConstraintDTO(
         var constraintType: ConstraintType,
         var rangeIntData: List<Int>?,
         var rangeFloatData: List<Float>?,
-        var whitelistData: List<String>?
+        var whitelistData: List<String>?,
+        var attributeNamespace: String?,
+        var attributeName: String?
 )
 
 data class MultipleConstraintsResponse(
