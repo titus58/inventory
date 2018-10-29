@@ -14,3 +14,7 @@ data class Owner(
         @Column(nullable = false)
         var name: String
 )
+
+data class MultipleOwnersResponse(
+        var owners: List<Owner>
+)
