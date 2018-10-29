@@ -11,17 +11,16 @@ data class ProductUnit(
     @ManyToOne
     var owner: Owner
 ) {
-    fun toDTO(): ProductUnitDto {
-        return ProductUnitDto(id = id, name = name, ownerId = owner.id)
+    fun toDTO(): ProductUnitDTO {
+        return ProductUnitDTO(id = id, name = name, ownerId = owner.id)
     }
 }
 
-
-data class ProductUnitDto(
+data class ProductUnitDTO(
         var id: Long?,
         var name: String,
         var ownerId: Long
 )
 data class MultipleUnitsResponse(
-        var units: List<ProductUnitDto>
+        var units: List<ProductUnitDTO>
 )

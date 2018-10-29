@@ -2,7 +2,7 @@ package com.vlad.inventory.controller
 
 import com.vlad.inventory.model.MultipleUnitsResponse
 import com.vlad.inventory.model.ProductUnit
-import com.vlad.inventory.model.ProductUnitDto
+import com.vlad.inventory.model.ProductUnitDTO
 import com.vlad.inventory.service.OwnerRepository
 import com.vlad.inventory.service.ProductUnitRepository
 import org.slf4j.LoggerFactory
@@ -36,13 +36,13 @@ class UnitController {
 
     @PostMapping("/units")
     @ResponseBody
-    fun postUnit(@RequestBody productUnitDto: ProductUnitDto): ProductUnitDto {
+    fun postUnit(@RequestBody productUnitDTO: ProductUnitDTO): ProductUnitDTO {
         val owner = ownerRepository
-                .findById(productUnitDto.ownerId)
-                .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find owner with id " + productUnitDto.ownerId) }
+                .findById(productUnitDTO.ownerId)
+                .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find owner with id " + productUnitDTO.ownerId) }
         val productUnit = ProductUnit(
                 id = null,
-                name = productUnitDto.name,
+                name = productUnitDTO.name,
                 owner = owner
         )
         return productUnitRepository.save(productUnit).toDTO()
