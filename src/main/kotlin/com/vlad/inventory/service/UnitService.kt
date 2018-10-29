@@ -36,9 +36,13 @@ class UnitService {
                 .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find owner with id " + productUnitDTO.ownerId) }
         val productUnit = ProductUnit(
                 id = null,
-                name = productUnitDTO.name,
+                description = productUnitDTO.description,
                 owner = owner,
-                productType = productType
+                productType = productType,
+                mass = productUnitDTO.mass,
+                expiryDate = productUnitDTO.expiryDate,
+                latitude = null,
+                longitude = null
         )
         return productUnitRepository.save(productUnit).toDTO()
     }
