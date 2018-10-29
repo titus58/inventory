@@ -60,4 +60,20 @@ class UnitController {
     fun getAllAttributes(@PathVariable unitId: Long): MultipleAttributeValuesResponse {
         return unitService.getAllAttributes(unitId)
     }
+
+    @GetMapping("/units/{unitId}/location")
+    @ResponseBody
+    fun getLocation(@PathVariable unitId: Long): Location {
+        val location = unitService.getLocation(unitId)
+        if (location == null) {
+            throw  ResponseStatusException(HttpStatus.NOT_FOUND, "Unit does not have location set")
+        }
+        return location!!
+    }
+
+    @PostMapping("/units/{unitId}/location")
+    @ResponseBody
+    fun postLocation(@PathVariable unitId: Long, @RequestBody location: Location): Location {
+        return unitService.postLocation(unitId, location)
+    }
 }

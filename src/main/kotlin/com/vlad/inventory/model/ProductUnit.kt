@@ -24,11 +24,14 @@ data class ProductUnit(
     @field:CreationTimestamp
     lateinit var creationTimestamp: Date
 
+    fun getLocation(): Location? =
+            if (latitude != null && longitude != null) Location(latitude = latitude!!, longitude = longitude!!) else null
+
     fun toDTO(): ProductUnitDTO {
         // TODO set location
         return ProductUnitDTO(id = id, description = description, ownerId = owner.id, ownerName = owner.name, productTypeId = productType.id,
                 productTypeName = productType.name, attributes = null, isValid = null, unsatisfiedConstraints = null, creationTimestamp = creationTimestamp,
-                mass = mass, expiryDate = expiryDate, location = null)
+                mass = mass, expiryDate = expiryDate, location = getLocation())
     }
 }
 

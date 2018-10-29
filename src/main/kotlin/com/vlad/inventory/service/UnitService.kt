@@ -120,8 +120,6 @@ class UnitService {
         if (!returnAttributes && !validate) {
             return dto
         }
-        val attributes = attributeValueRepository
-                .findByProductUnit(productUnit)
         if (validate) {
              val unsatisfiedConstraints = constraintEntityRepository
                     .findByProductType(productUnit.productType)
@@ -129,6 +127,11 @@ class UnitService {
                      .map { it.toOutputDTO() }
             dto.isValid = unsatisfiedConstraints.isEmpty()
             dto.unsatisfiedConstraints = unsatisfiedConstraints
+        }
+        if (returnAttributes) {
+            dto.attributes = attributeValueRepository
+                    .findByProductUnit(productUnit)
+                    .map { it.toOutputDTO() }
         }
         return dto
     }
@@ -138,5 +141,22 @@ class UnitService {
                 .findAll()
                 .map { getEnhancedUnitDTO(it, returnAttributes = returnAttributes, validate = validate) }
                 .toList()
+    }
+
+    fun getLocation(unitId: Long): Location?  {
+        val productUnit = productUnitRepository
+                .findById(unitId)
+                .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find unit with id " + unitId) }
+        return productUnit.getLocation()
+    }
+
+    fun postLocation(unitId: Long, location: Location): Location {
+        val productUnit = productUnitRepository
+                .findById(unitId)
+                .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find unit with id " + unitId) }
+        productUnit.longitude = location.longitude
+        productUnit.latitude = location.latitude
+        productUnitRepository.save(productUnit)
+        return location
     }
 }
