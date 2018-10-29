@@ -9,9 +9,13 @@ enum class AttributeValueType {
 @Entity
 data class AttributeType(
         @Id @GeneratedValue
-        var id: Id,
+        var id: Long,
         var namespace: String,
         var name: String,
         @Enumerated(EnumType.STRING)
         var type: AttributeValueType
+)
+
+data class MultipleAttributeTypesResponse(
+        var attributeTypes: List<AttributeType>
 )

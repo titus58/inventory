@@ -9,8 +9,7 @@ data class ProductUnit(
     @Column(nullable = false)
     var name: String,
     @ManyToOne
-    var owner: Owner,
-    var attributes: List<AttributeType>
+    var owner: Owner
 ) {
     fun toDTO(): ProductUnitDTO {
         return ProductUnitDTO(id = id, name = name, ownerId = owner.id)
