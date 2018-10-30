@@ -81,6 +81,18 @@ class UnitController {
         return location!!
     }
 
+    @DeleteMapping("/units/{unitId}")
+    @ResponseBody
+    fun deleteUnit(@PathVariable unitId: Long) {
+        unitService.deleteUnit(unitId)
+    }
+
+    @DeleteMapping("/units/{unitId}/attributes/{attributeValueId}")
+    @ResponseBody
+    fun deleteAttribute(@PathVariable unitId: Long, @PathVariable attributeValueId: Long) {
+        unitService.deleteAttribute(unitId = unitId, attributeValueId = attributeValueId)
+    }
+
     @PostMapping("/units/{unitId}/location")
     @ResponseBody
     fun postLocation(@PathVariable unitId: Long, @RequestBody location: Location): Location {

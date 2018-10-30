@@ -65,6 +65,10 @@ class UnitService {
         val attributeType = attributeTypeRepository
                 .findById(attributeValueDTO.attributeTypeId)
                 .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot find attribute type with id " + attributeValueDTO.attributeTypeId) }
+        val attributeExists = !attributeValueRepository.findByProductUnitAndAttributeType(productUnit, attributeType).isEmpty()
+        if (attributeExists) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Unit " + unitId + " already has an attribute with typeId " + attributeType.id)
+        }
         if (attributeType.type == AttributeValueType.FLOAT) {
             val floatValue = attributeValueDTO.floatValue ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "floatValue not set for float attribute")
             val attributeValue = AttributeValue(id = null, productUnit = productUnit, attributeType = attributeType, floatValue = floatValue, intValue = null, stringValue = null)
@@ -83,6 +87,23 @@ class UnitService {
         throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error. Unexpected attribute type " + attributeType.type)
         return null
     }
+
+    fun deleteAttribute(unitId: Long, attributeValueId: Long): Unit {
+        val attributeValue: AttributeValue = attributeValueRepository.findById(attributeValueId)
+                .orElseThrow{ ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find attribute value with id " + attributeValueId) }
+        if (attributeValue.productUnit.id != unitId) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Attribute value with id " + attributeValueId + " does not belong to unit with id " + unitId)
+        }
+        attributeValueRepository.delete(attributeValue)
+    }
+
+    fun deleteUnit(unitId: Long) {
+        val productUnit = productUnitRepository
+                .findById(unitId)
+                .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find unit with id " + unitId) }
+        productUnitRepository.delete(productUnit)
+    }
+
 
     fun checkConstraintIsSatisfied(constraintEntity: ConstraintEntity, productUnit: ProductUnit): Boolean  {
         val attributeType = constraintEntity.attributeType
