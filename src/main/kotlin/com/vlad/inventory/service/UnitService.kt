@@ -136,7 +136,7 @@ class UnitService {
         return dto
     }
 
-    fun getAll(returnAttributes: Boolean, validate: Boolean): List<ProductUnitDTO> {
+    fun getAllUnits(returnAttributes: Boolean, validate: Boolean): List<ProductUnitDTO> {
         return productUnitRepository
                 .findAll()
                 .map { getEnhancedUnitDTO(it, returnAttributes = returnAttributes, validate = validate) }
@@ -158,5 +158,12 @@ class UnitService {
         productUnit.latitude = location.latitude
         productUnitRepository.save(productUnit)
         return location
+    }
+
+    fun getSingleUnit(unitId: Long, returnAttributes: Boolean, validate: Boolean): ProductUnitDTO {
+        val productUnit = productUnitRepository
+                .findById(unitId)
+                .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find unit with id " + unitId) }
+        return getEnhancedUnitDTO(productUnit, returnAttributes = returnAttributes, validate = validate)
     }
 }

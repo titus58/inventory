@@ -18,7 +18,7 @@ class UnitController {
 
     @GetMapping("/units")
     @ResponseBody
-    fun getAll(
+    fun getAllUnits(
             @RequestParam(value="returnAttributes", required = false, defaultValue = "false") returnAttributes: Boolean,
             @RequestParam(value="validate", required = false, defaultValue = "false") validate: Boolean,
             @RequestParam(value="filter", required = false, defaultValue = "all") filter: String
@@ -28,7 +28,7 @@ class UnitController {
         }
         val shouldValidate = validate || (filter != "all")
         val units = unitService
-                .getAll(returnAttributes = returnAttributes, validate = validate)
+                .getAllUnits(returnAttributes = returnAttributes, validate = shouldValidate)
                 .filter {
                     if (filter == "all") {
                         true
@@ -41,6 +41,16 @@ class UnitController {
                     }
                 }
         return MultipleUnitsResponse(units)
+    }
+
+    @GetMapping("/units/{unitId}")
+    @ResponseBody
+    fun getSingleUnit(
+            @PathVariable unitId: Long,
+            @RequestParam(value="returnAttributes", required = false, defaultValue = "false") returnAttributes: Boolean,
+            @RequestParam(value="validate", required = false, defaultValue = "false") validate: Boolean
+    ): ProductUnitDTO  {
+        return unitService.getSingleUnit(unitId, returnAttributes = returnAttributes, validate = validate)
     }
 
     @PostMapping("/units")
