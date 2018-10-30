@@ -35,11 +35,42 @@ class ProductTypeController {
         return MultipleProductTypesResponse(productTypes)
     }
 
+
+    @GetMapping("/product-types/{productTypeId}")
+    @ResponseBody
+    fun getSingleProductType(@PathVariable productTypeId: Long): ProductTypeDTO {
+        val productType = productTypeRepository
+                .findById(productTypeId)
+                .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find product type with id  " + productTypeId) }
+        return productType.toDTO()
+    }
+
     @PostMapping("/product-types")
     @ResponseBody
     fun postProductType(@RequestBody productTypeDTO: ProductTypeDTO): ProductTypeDTO {
         val productType = productTypeDTO.toEntity()
         return productTypeRepository.save(productType).toDTO()
+    }
+
+    @DeleteMapping("/product-types/{productTypeId}/constraints/{constraintId}")
+    @ResponseBody
+    fun deleteConstraint(@PathVariable productTypeId: Long, @PathVariable constraintId: Long) {
+        val constraint = constraintEntityRepository
+                .findById(constraintId)
+                .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Non existing constraint with id " + constraintId)}
+        if (constraint.productType.id != productTypeId) {
+            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Constraint " + constraintId + " does not belong to product type " + productTypeId)
+        }
+        constraintEntityRepository.delete(constraint)
+    }
+
+    @DeleteMapping("/product-types/{productTypeId}")
+    @ResponseBody
+    fun deleteProductType(@PathVariable productTypeId: Long) {
+        val productType = productTypeRepository
+                .findById(productTypeId)
+                .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find product type with id  " + productTypeId) }
+        productTypeRepository.delete(productType)
     }
 
     @GetMapping("/product-types/{productTypeId}/constraints")
@@ -59,6 +90,7 @@ class ProductTypeController {
     @PostMapping("/product-types/{productTypeId}/constraints")
     @ResponseBody
     fun postConstraint(@PathVariable productTypeId: Long, @RequestBody constraintDTO: ConstraintDTO): ConstraintDTO? {
+        // TODO: move this function to Service
         val productType = productTypeRepository
                 .findById(productTypeId)
                 .orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Cannot find product type with id  " + productTypeId) }
